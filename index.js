@@ -1,5 +1,6 @@
 const express = require("express");
 const mustacheExpress = require("mustache-express");
+const bodyParse = require("body-parser");
 const Filter = require("bad-words");
 
 const app = express();
@@ -19,14 +20,20 @@ const predictions = [
 
 app.engine("mustache", mustacheExpress());
 app.set("view engine", "mustache");
-app.set("views", __dirname + "/views");
+app.set("views", "./views");
 
-app.use(express.urlencoded({ extended: true }));
+app.use(bodyParse.urlencoded({ extended: true }));
+app.use(bodyParse.json({ extended: true }));
+app.use(express.static("public"));
 
-app.route("/predictions").get((req, res) => {
+app.route("/").get((req, res) => {
   const randomIndex = Math.floor(Math.random() * predictions.length);
   const prediction = predictions[randomIndex];
-  res.render("", prediction);
+  res.render("prediction.mustache", { prediction: prediction });
+});
+
+app.route("/download").get((req, res) => {
+  res.download("./public/fortune-teller.png");
 });
 
 app
@@ -44,9 +51,11 @@ app
       });
     } else if (isValid) {
       predictions.push(prediction);
-      res.render("success", { message: "Prediction submitted successfully." });
+      res.render("success", {
+        message: "Prediction submitted successfully. Want to submit another?",
+      });
     } else {
-      res.render("error", { error: "Prediction contains profanity." });
+      res.render("error", { error: "Predictions cannot contain profanity." });
     }
   });
 
