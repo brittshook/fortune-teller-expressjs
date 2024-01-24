@@ -27,6 +27,10 @@ app.use(bodyParse.json({ extended: true }));
 app.use(express.static("public"));
 
 app.route("/").get((req, res) => {
+  res.render("home.mustache");
+});
+
+app.route("/prediction").get((req, res) => {
   const randomIndex = Math.floor(Math.random() * predictions.length);
   const prediction = predictions[randomIndex];
   res.render("prediction.mustache", { prediction: prediction });
@@ -39,23 +43,25 @@ app.route("/download").get((req, res) => {
 app
   .route("/submit-prediction")
   .get((req, res) => {
-    res.render("form");
+    res.render("form.mustache");
   })
   .post((req, res) => {
     const { prediction } = req.body;
     const isValid = !containsProfanity(prediction);
 
     if (!prediction) {
-      res.render("error", {
-        error: "Invalid input. Please provide a prediction.",
+      res.render("form.mustache", {
+        alert: "Invalid input. Please provide a prediction.",
       });
     } else if (isValid) {
       predictions.push(prediction);
-      res.render("success", {
-        message: "Prediction submitted successfully. Want to submit another?",
+      res.render("form.mustache", {
+        alert: "Prediction submitted successfully. Want to submit another?",
       });
     } else {
-      res.render("error", { error: "Predictions cannot contain profanity." });
+      res.render("form.mustache", {
+        alert: "Invalid input. Predictions cannot contain profanity.",
+      });
     }
   });
 
